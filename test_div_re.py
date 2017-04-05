@@ -40,5 +40,11 @@ class TestDivRe(unittest.TestCase):
     def test_mod_10(self):
         self._testModulus(10)
 
+    def test_mod_14(self):
+        self._testModulus(14)
+
+    def test_mod_100(self):
+        self._testModulus(100)
+
 if __name__ == "__main__":
     unittest.main()
