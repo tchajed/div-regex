@@ -7,7 +7,8 @@ import gnfa
 import regex
 
 def div_re(n):
-    r = gnfa.Gnfa.dfa_re(divisible_by(n))
+    m = divisible_by(n).minimal()
+    r = gnfa.Gnfa.dfa_re(m)
     return "^" + r.to_re() + "$"
 
 if __name__ == "__main__":
