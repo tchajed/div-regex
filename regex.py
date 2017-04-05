@@ -131,6 +131,14 @@ def _alt_to_lit_group(rs):
     return LiteralGroup(cs), True
 
 def _simplify(r):
+    """Simplify a regular expression.
+
+    Returns a tuple (r_new, simpler) where r_new is equivalent to r but
+    possibly with some simplifications. simpler is a boolean that reports if
+    any simplifications were made.
+
+    This is a low-level function that implements one step of simplification.
+    """
     if isinstance(r, Literal):
         return r, False
     if isinstance(r, LiteralGroup):
@@ -186,6 +194,16 @@ def _simplify(r):
     raise ValueError("unexpected regex {}".format(r))
 
 def simplify(r):
+    """Simplify a regular expression.
+
+    Simplifications include:
+    - removing Empty as much as possible
+    - removing the epsilon language (Empty*, which only matches the zero-length string) as much as possible
+    - flattening ORs to a single level (since Alternation takes a list)
+    - flattening sequences to a single level (since Seq takes a list)
+    - using LiteralGroups ([abc] in normal regex syntax) instead of an OR of literals
+    - unwrapping sequences and ORs of single regexes
+    """
     r, simpler = _simplify(r)
     while simpler:
         r, simpler = _simplify(r)
