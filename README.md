@@ -8,6 +8,20 @@ For example, here's a regular expression that matches numbers divisible by 4:
 ^(?:[048]*|(?:[048]*[13579](?:[13579]|(?:[26][048]*[13579]))*[26][048]*)|(?:(?:(?:[048]*[26])|(?:[048]*[13579](?:[13579]|(?:[26][048]*[13579]))*(?:[048]|(?:[26][048]*[26]))))(?:[26]|(?:[048][048]*[26])|(?:(?:[13579]|(?:[048][048]*[13579]))(?:[13579]|(?:[26][048]*[13579]))*(?:[048]|(?:[26][048]*[26]))))*(?:(?:[048][048]*)|(?:(?:[13579]|(?:[048][048]*[13579]))(?:[13579]|(?:[26][048]*[13579]))*[26][048]*))))$
 ```
 
+Divisibility by 2 is simpler:
+
+```txt
+^(?:[02468]*|(?:[02468]*[13579](?:[13579]|(?:[02468][02468]*[13579]))*[02468][02468]*))$
+```
+
+and divisibility by 10 is even simpler:
+
+```txt
+^(?:0*|(?:0*[123456789](?:[123456789]|(?:00*[123456789]))*00*))$
+```
+
+Note that the program uses '(?:regexp)' to parenthesize `regexp`: this is a non-capturing group; otherwise on Python 2 we run into a limit of 100 capturing groups pretty quickly.
+
 ## Background
 
 Here's some quick background on the theory of computation that you need to understand what we're doing here. I'm going to assume you already know what a regular expression is (sorry!).
