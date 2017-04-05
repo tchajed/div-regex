@@ -67,10 +67,22 @@ class Dfa:
     def minimal(self):
         """Compute an equivalent DFA with the minimal number of states.
 
+        Follows the partition-based algorithm in these lecture notes (from
+        UIUC's CS 373 from Spring 2010):
+        https://courses.engr.illinois.edu/cs373/sp2010/lectures/lect_11.pdf.
+
         Does not modify self.
         """
+        # The heavy lifting of computing which DFA states to merge is handled
+        # by _minimal_partition.
         p = self._minimal_partition()
+
+        # Now we must re-organize the DFA to use the partition indices in p as
+        # states, copying over the transition function with the new state names.
         state_renaming = p.indices()
+
+        # Each new state transitions according to an arbitrary state from that
+        # partition.
         delta = []
         for q in range(len(p.sets)):
             # arbitrary row from old delta corresponding to this partition
@@ -79,10 +91,18 @@ class Dfa:
             for x, old_next_q in old_q_delta.items():
                 new_q_delta[x] = state_renaming[old_next_q]
             delta.append(new_q_delta)
+
+        # The initial state may have been renamed.
         init = state_renaming[self._init_state]
+
+        # The accept states are those partitions that contain original accept
+        # states. Minimizations begins by keeping accept states together, so if
+        # a partition has any accept state, all are accept states.
         accept_states = set([])
         for accept_q in self.accept_states:
             accept_states.add(state_renaming[accept_q])
+
+        # Assemble the new DFA
         return Dfa(delta, accept_states, init)
 
 class Partition:
@@ -92,7 +112,10 @@ class Partition:
     def refine(self, same_partition):
         sets = []
         for p in self.sets:
-            other_p = []
+            # We take each each element of p and remove it plus anything
+            # equivalent to it, moving them into a new top-level partition set.
+            # Continue until all the elements of p end up in the same
+            # partition.
             while len(p) > 0:
                 q = p[0]
                 # partition into things similar to q...
@@ -104,7 +127,9 @@ class Partition:
                         q_p.append(other_q)
                     else:
                         other_p.append(other_q)
+                # this partition was determined by p
                 sets.append(q_p)
+                # continue into all other elements
                 p = other_p
         return Partition(sets)
 
