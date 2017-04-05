@@ -1,5 +1,9 @@
 class Regex:
-    pass
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
 
 class Literal(Regex):
     def __init__(self, c):
@@ -57,6 +61,8 @@ class Star(Regex):
         return "Star({})".format(self.r)
 
     def to_re(self):
+        if self.is_eps():
+            return "(?:)"
         return "{}*".format(self.r.to_re())
 
     def is_empty(self):
@@ -74,7 +80,13 @@ class Alternation(Regex):
         return "Alternation({})".format(self.rs)
 
     def to_re(self):
-        return "(?:{})".format("|".join([r.to_re() for r in self.rs]))
+        sub_res = []
+        for r in self.rs:
+            if r.is_eps():
+                sub_res.append("")
+            else:
+                sub_res.append(r.to_re())
+        return "(?:{})".format("|".join(sub_res))
 
     def is_empty(self):
         # every possibility must be empty
@@ -130,6 +142,41 @@ def _alt_to_lit_group(rs):
             return Alternation(rs), False
     return LiteralGroup(cs), True
 
+def _alt_common_prefix(rs):
+    """Find a common prefix among two elements of rs."""
+    for r in rs:
+        if isinstance(r, Seq):
+            new_rs = _alt_common_prefix_with(r.rs[0], rs)
+            if new_rs is not None:
+                return new_rs, True
+        new_rs = _alt_common_prefix_with(r, rs)
+        if new_rs is not None:
+            return new_rs, True
+    return rs, False
+
+def _alt_common_prefix_with(prefix, rs):
+    """Extract elements of rs that begin with prefix.
+
+    Returns an rs with prefix factored out if more than one element matches,
+    and None otherwise.
+    """
+    other_rs = []
+    suffixes = []
+    for r in rs:
+        if r == prefix:
+            suffixes.append(Eps())
+            continue
+        if isinstance(r, Seq):
+            if r.rs[0] == prefix:
+                suffixes.append(Seq(r.rs[1:]))
+                continue
+        other_rs.append(r)
+    if len(suffixes) > 1:
+        new_rs = other_rs
+        new_rs.append(Seq([prefix, Alternation(suffixes)]))
+        return new_rs
+    return None
+
 def _simplify(r):
     """Simplify a regular expression.
 
@@ -169,6 +216,9 @@ def _simplify(r):
             return Empty(), True
         if len(rs) == 1:
             return rs[0], True
+        # common prefix elimination is disabled because it's quite slow
+        #rs, simpler = _alt_common_prefix(rs)
+        #alt_simpler = alt_simpler or simpler
         r, simpler = _alt_to_lit_group(rs)
         return r, alt_simpler or simpler
     if isinstance(r, Seq):
