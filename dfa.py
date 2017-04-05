@@ -13,8 +13,20 @@ class Dfa:
     def accept_states(self):
         return self._accept_states
 
+    @property
+    def init_state(self):
+        return self._init_state
+
     def transition(self, state, x):
         return self._delta[state][x]
+
+    def out_edges(self, state):
+        next_states = {}
+        for x, next_s in self._delta[state].items():
+            if next_s not in next_states:
+                next_states[next_s] = []
+            next_states[next_s].append(x)
+        return next_states
 
     def run(self, s):
         """ Run DFA on string s, producing a terminating state. """
