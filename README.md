@@ -1,10 +1,10 @@
 # Divisibility regex
 
-We write a program to compute a regex that matches numbers divisible by some specific n.
+A program to compute a regex that matches numbers divisible by some specific n.
 
 For example, here's a regular expression that matches numbers divisible by 4:
 
-```
+```text
 ^([048]*|([048]*[159]([37]|([26][048]*[159]))*[26][048]*)|((([048]*[26])|([048]*[159]([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))([26]|([048][048]*[26])|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))*(([048][048]*)|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*[26][048]*)))|((([048]*[37])|([048]*[159]([37]|([26][048]*[159]))*([159]|([26][048]*[37])))|((([048]*[26])|([048]*[159]([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))([26]|([048][048]*[26])|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))*([37]|([048][048]*[37])|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*([159]|([26][048]*[37]))))))([159]|([26][048]*[37])|(([37]|([26][048]*[159]))([37]|([26][048]*[159]))*([159]|([26][048]*[37])))|(([048]|([26][048]*[26])|(([37]|([26][048]*[159]))([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))([26]|([048][048]*[26])|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))*([37]|([048][048]*[37])|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*([159]|([26][048]*[37]))))))*(([26][048]*)|(([37]|([26][048]*[159]))([37]|([26][048]*[159]))*[26][048]*)|(([048]|([26][048]*[26])|(([37]|([26][048]*[159]))([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))([26]|([048][048]*[26])|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*([048]|([26][048]*[26]))))*(([048][048]*)|(([159]|([048][048]*[159]))([37]|([26][048]*[159]))*[26][048]*))))))$
 ```
 
@@ -31,7 +31,7 @@ m_{i+1} % n = (m_i * 10 + d_{i+1}) % n
             = ((m_i % n) * 10 + d_{i+1}) % n.
 ```
 
-This suggest the finite automaton. Putting together the pieces, we'll use the state of the automaton to track `m_i % n` (so we'll need n states), and handle each digit $d_{i+1}$ from most significant to least significant. The above formula tells us how to fill out the entire transition table for the finite automaton.
+This suggests the finite automaton. Putting together the pieces, we'll use the state of the automaton to track `m_i % n` (so we'll need n states), and handle each digit `d_{i+1}` from most significant to least significant. The above formula tells us how to fill out the entire transition table for the finite automaton.
 
 ## DFAs to regular expressions
 
