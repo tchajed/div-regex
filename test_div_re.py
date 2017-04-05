@@ -1,35 +1,41 @@
 #!/usr/bin/env python3
 
+# End-to-end test of divisibility regex.
+# Run tests with
+# python3 -m unittest discover
+
 from __future__ import print_function
 
 import re
-import sys
+import unittest
+
 from div_re import div_re
 
-def test_modulus(n):
-    passed = True
-    r = re.compile(div_re(n))
+class TestDivRe(unittest.TestCase):
 
-    for m in range(1000):
-        regex_div = True if r.match(str(m)) else False
-        true_div = m % n == 0
-        passed = passed and regex_div == true_div
-        if regex_div == True and true_div == False:
-            print("matched non-divisible {}".format(m), file=sys.stderr)
-        if regex_div == False and true_div == True:
-            print("failed to match {}".format(m), file=sys.stderr)
+    def _testModulus(self, n):
+        r = re.compile(div_re(n))
 
-    return passed
+        for m in range(1000):
+            regex_div = True if r.match(str(m)) else False
+            true_div = m % n == 0
+            self.assertEqual(regex_div, true_div,
+                             msg="wrong divisibility of {} by {}".format(m, n))
 
-# TODO: convert to a nose test
+    def test_mod_1(self):
+        self._testModulus(1)
+
+    def test_mod_3(self):
+        self._testModulus(3)
+
+    def test_mod_4(self):
+        self._testModulus(4)
+
+    def test_mod_5(self):
+        self._testModulus(5)
+
+    def test_mod_7(self):
+        self._testModulus(7)
+
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("n", type=int,
-                        help="modulus to test divisibility against")
-
-    args = parser.parse_args()
-
-    if not test_modulus(args.n):
-        sys.exit(1)
+    unittest.main()

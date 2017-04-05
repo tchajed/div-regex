@@ -74,7 +74,7 @@ class Alternation(Regex):
         return "Alternation({})".format(self.rs)
 
     def to_re(self):
-        return "({})".format("|".join([r.to_re() for r in self.rs]))
+        return "(?:{})".format("|".join([r.to_re() for r in self.rs]))
 
     def is_empty(self):
         # every possibility must be empty
@@ -99,7 +99,7 @@ class Seq(Regex):
         return "Seq({})".format(self.rs)
 
     def to_re(self):
-        return "({})".format("".join([r.to_re() for r in self.rs]))
+        return "(?:{})".format("".join([r.to_re() for r in self.rs]))
 
     def is_empty(self):
         for r in self.rs:
