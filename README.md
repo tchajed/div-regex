@@ -20,7 +20,7 @@ and divisibility by 10 is even simpler:
 ^(?:0*|(?:0*[123456789](?:[123456789]|(?:00*[123456789]))*00*))$
 ```
 
-Note that the program uses '(?:regexp)' to parenthesize `regexp`: this is a non-capturing group; otherwise on Python 2 we run into a limit of 100 capturing groups pretty quickly.
+Note that the program uses '(?:regexp)' to parenthesize `regexp`: this is a non-capturing group; otherwise on Python 2 we run into a limit of 100 capturing groups pretty quickly and even on Python 3 it's much faster.
 
 ## Background
 
