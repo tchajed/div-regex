@@ -1,8 +1,10 @@
 class Dfa:
+    """Representation of Deterministic finite automata (DFA)."""
+
     def __init__(self, delta, accept_states, init_state):
         """
         delta: a transition table. Should be an array of hashes, where
-        delta[s][x] gives next state for state s on input x.
+            delta[s][x] gives next state for state s on input x.
         accept_states: list of accept states
         """
         self._delta = delta
@@ -17,12 +19,18 @@ class Dfa:
     def init_state(self):
         return self._init_state
 
-    def transition(self, state, x):
-        return self._delta[state][x]
+    def transition(self, s, x):
+        """Next state upon receiving input x in state s."""
+        return self._delta[s][x]
 
-    def out_edges(self, state):
+    def next_states(self, s):
+        """Map from next states to inputs triggering the transition.
+
+        Only possible next states appear as keys, and values give a list of
+        inputs.
+        """
         next_states = {}
-        for x, next_s in self._delta[state].items():
+        for x, next_s in self._delta[s].items():
             if next_s not in next_states:
                 next_states[next_s] = []
             next_states[next_s].append(x)

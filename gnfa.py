@@ -5,7 +5,14 @@ from __future__ import print_function
 import regex
 
 class Gnfa:
-    """A GNFA (generalize NFA) is an NFA with regexes on the edges."""
+    """A GNFA (generalize NFA) is an NFA with regexes on the edges.
+
+    These automata are a useful intermediate step in converting an NFA to a
+    regular expression, as they trivially express NFAs and can be reduced to a
+    single regular expression. This approach follows the one used in UIUC's
+    Theory of Computation course (CS 373). See
+    https://courses.engr.illinois.edu/cs373/sp2010/lectures/lect_08.pdf.
+    """
     def __init__(self, delta, init, terminal):
         """
         delta: a map from state -> next state -> regex,
@@ -22,7 +29,7 @@ class Gnfa:
         delta = {}
         for s in range(len(dfa._delta)):
             s_delta = {}
-            for next_s, xs in dfa.out_edges(s).items():
+            for next_s, xs in dfa.next_states(s).items():
                 literals = [regex.Literal(x) for x in xs]
                 s_delta[next_s] = regex.Alternation(literals)
             delta[s] = s_delta
