@@ -20,7 +20,7 @@ class TestDivDfa(unittest.TestCase):
         dfa = divisible_by(n).minimal()
 
         for m in range(1000):
-            dfa_div = dfa.run(str(m)) in dfa.accept_states
+            dfa_div = dfa.accepts(str(m))
             true_div = m % n == 0
             self.assertEqual(dfa_div, true_div,
                              msg="wrong divisibility of {} by {}".format(m, n))

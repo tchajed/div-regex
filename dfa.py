@@ -1,5 +1,5 @@
 class Dfa:
-    """Representation of Deterministic finite automata (DFA)."""
+    """Representation of deterministic finite automata (DFA)."""
 
     def __init__(self, delta, accept_states, init_state):
         """
@@ -40,11 +40,15 @@ class Dfa:
         return next_states
 
     def run(self, s):
-        """ Run DFA on string s, producing a terminating state. """
+        """Run DFA on string s, producing a terminating state."""
         state = self.init_state
         for c in s:
             state = self.transition(state, c)
         return state
+
+    def accepts(self, s):
+        """Return True if the automaton accepts s."""
+        return self.run(s) in self.accept_states
 
     def _minimal_partition(self):
         """Partition the DFA states according to equivalence."""
@@ -101,7 +105,7 @@ class Dfa:
         init = state_renaming[self._init_state]
 
         # The accept states are those partitions that contain original accept
-        # states. Minimizations begins by keeping accept states together, so if
+        # states. Minimization begins by keeping accept states together, so if
         # a partition has any accept state, all are accept states.
         accept_states = set([])
         for accept_q in self.accept_states:
