@@ -51,9 +51,10 @@ class Dfa:
         non_accept_states = [s for s in self.states()
                              if s not in self.accept_states]
         p = Partition([list(self.accept_states), non_accept_states])
-        new_p = None
-        while new_p is None or len(new_p.sets) < len(p.sets):
-            # two states
+        # will break when we stop making progress
+        while True:
+            # two states are equivalent if they have map each input to the same
+            # partition (assuming q and other_q started in the same partition)
             def same_partition(q, other_q):
                 for x in self._delta[q].keys():
                     delta_q = self.transition(q, x)
@@ -62,7 +63,11 @@ class Dfa:
                         return False
                 return True
             new_p = p.refine(same_partition)
-        return new_p
+            # reached a fixed point, no more refinement is posible
+            if len(new_p.sets) == len(p.sets):
+                break
+            p = new_p
+        return p
 
     def minimal(self):
         """Compute an equivalent DFA with the minimal number of states.
