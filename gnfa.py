@@ -74,23 +74,37 @@ class Gnfa:
             del s_delta[s]
 
     def rip_state(self, q_rip):
+        """Rip out q_rip and patch up the GNFA to be equivalent."""
         in_list = self.incoming_edges(q_rip)
         out_list = self.outgoing_edges(q_rip)
         R_rip = regex.Star(self.loop_regex(q_rip))
+        # We now have in_list, a list of incoming edges to q_rip, and out_list,
+        # a list of outgoing edges. There might be cases where the states in
+        # in_list and out_list are the same, which is fine. We will iterate
+        # over all pairs of elements in order to consider all paths that go
+        # through q_rip.
         for q_in, r_in in in_list:
             for q_out, r_out in out_list:
+                # r_rip_replacement is a way to go from q_in directly to q_out
+                # wherever the original GNFA went through q_rip.
                 r_rip_replacement = regex.Seq([r_in, R_rip, r_out])
+                # We want to install r_rip_replacement, but there might already
+                # be an existing path: the GNFA should be able to take either,
+                # so we construct an OR of the old path and the new one.
                 old_in_out = self.transition(q_in, q_out)
                 self.delta[q_in][q_out] = regex.Alternation([old_in_out, r_rip_replacement])
+        # Now that every path through q_rip is redundant, we delete it.
         self._delete_state(q_rip)
 
     def _arbitrary_state(self):
+        """Returns some state that isn't the initial or final state."""
         for s in self.delta.keys():
             if s != self._init:
                 return s
         return None
 
     def rip_all(self):
+        """Reduce the GNFA by removing all but the initial and final states."""
         q_rip = self._arbitrary_state()
         while q_rip is not None:
             self.rip_state(q_rip)
