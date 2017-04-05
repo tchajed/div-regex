@@ -95,3 +95,18 @@ class Gnfa:
         while q_rip is not None:
             self.rip_state(q_rip)
             q_rip = self._arbitrary_state()
+
+    @classmethod
+    def dfa_re(cls, dfa):
+        """Convert a DFA to a regular expression via a GNFA.
+
+        Performs regular expression simplification on the computed regular expression.
+        """
+        m = cls.from_dfa(dfa)
+        m.rip_all()
+        if list(m.delta.keys()) != [m._init]:
+            raise ValueError('GNFA must have only init state')
+        if list(m.delta['init'].keys()) != [m._terminal]:
+            raise ValueError('GNFA must transition only to final state')
+        r = m.transition(m._init, m._terminal)
+        return regex.simplify(r)
