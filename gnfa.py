@@ -71,7 +71,8 @@ class Gnfa:
         """
         del self.delta[s]
         for s_delta in self.delta.values():
-            del s_delta[s]
+            if s in s_delta:
+                del s_delta[s]
 
     def rip_state(self, q_rip):
         """Rip out q_rip and patch up the GNFA to be equivalent."""
