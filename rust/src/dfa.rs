@@ -3,7 +3,6 @@ use std::hash::Hash;
 use std::iter;
 
 // TODO: figure out how to get RLS to infer types
-// TODO: switch to nightly
 
 pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
   delta: HashMap<S, HashMap<C, S>>,
@@ -50,7 +49,7 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
     self.delta[&s]
       .iter()
       .fold(HashMap::new(), |mut acc, (&x, &s)| {
-        acc.entry(s).or_insert(Vec::new()).push(x);
+        acc.entry(s).or_default().push(x);
         acc
       })
   }
