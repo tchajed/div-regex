@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
+use std::iter;
 
 // TODO: figure out how to get RLS to infer types
 // TODO: figure out why warnings don't show up in flycheck
@@ -12,7 +13,29 @@ pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
 }
 
 impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
+  fn transition_invariant(
+    delta: &HashMap<S, HashMap<C, S>>,
+    accept_states: &HashSet<S>,
+    init_state: &S,
+  ) -> bool {
+    let states: HashSet<_> = delta
+      .keys()
+      .chain(accept_states.iter())
+      .chain(iter::once(init_state))
+      .collect();
+    let chars: HashSet<_> = delta.values().flat_map(|next| next.keys()).collect();
+    states.iter().all(|s| delta.contains_key(s)) && delta.values().all(|next| {
+      // need a mapping for the same set of inputs
+      chars.iter().all(|c| next.contains_key(c)) && next.values().all(|s| states.contains(s))
+    })
+  }
+
   pub fn new(delta: HashMap<S, HashMap<C, S>>, accept_states: HashSet<S>, init_state: S) -> Self {
+    assert!(Dfa::transition_invariant(
+      &delta,
+      &accept_states,
+      &init_state
+    ));
     Dfa {
       delta,
       accept_states,
@@ -48,9 +71,28 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
 mod tests {
   use super::*;
 
+  fn make<S, C>(
+    delta: impl IntoIterator<Item = (S, impl IntoIterator<Item = (C, S)>)>,
+    accept_states: impl IntoIterator<Item = S>,
+    initial_state: S,
+  ) -> Dfa<S, C>
+  where
+    S: Hash + Eq + Copy,
+    C: Hash + Eq + Copy,
+  {
+    Dfa::new(
+      delta
+        .into_iter()
+        .map(|(s, next)| (s, next.into_iter().collect()))
+        .collect(),
+      accept_states.into_iter().collect(),
+      initial_state,
+    )
+  }
+
   #[test]
   fn trivial_accept() {
-    let dfa: Dfa<_, char> = Dfa::new(HashMap::new(), vec![1].into_iter().collect(), 1);
+    let dfa: Dfa<_, char> = make(vec![(1, vec![])], vec![1], 1);
     assert_eq!(dfa.accepts(vec![]), true);
   }
 }
