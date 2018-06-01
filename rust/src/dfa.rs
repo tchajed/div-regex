@@ -3,7 +3,6 @@ use std::hash::Hash;
 use std::iter;
 
 // TODO: figure out how to get RLS to infer types
-// TODO: figure out why warnings don't show up in flycheck
 // TODO: switch to nightly
 
 pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
