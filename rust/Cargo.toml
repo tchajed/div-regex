@@ -1,0 +1,6 @@
+[package]
+name = "div-regex"
+version = "0.1.0"
+authors = ["Tej Chajed <tchajed@mit.edu>"]
+
+[dependencies]
