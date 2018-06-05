@@ -54,7 +54,14 @@ impl Regex {
         } else if rs.len() == 1 {
           rs[0].clone()
         } else {
-          Regex::literal_group(rs).unwrap_or(Regex::Alternation(rs.clone()))
+          let rs = rs
+            .iter()
+            .flat_map(|r| match r.simplify() {
+              Regex::Alternation(rs) => rs.into_iter(),
+              r => vec![r].into_iter(),
+            })
+            .collect();
+          Regex::literal_group(&rs).unwrap_or(Regex::Alternation(rs))
         }
       }
       Regex::Seq(ref rs) => {
@@ -63,7 +70,14 @@ impl Regex {
         } else if rs.len() == 1 {
           rs[0].clone()
         } else {
-          Regex::Seq(rs.clone())
+          let rs = rs
+            .iter()
+            .flat_map(|r| match r.simplify() {
+              Regex::Seq(rs) => rs.into_iter(),
+              r => vec![r].into_iter(),
+            })
+            .collect();
+          Regex::Seq(rs)
         }
       }
     }
