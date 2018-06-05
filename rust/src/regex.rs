@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Clone, Debug)]
 pub enum Regex {
   Literal(char),
@@ -6,6 +8,10 @@ pub enum Regex {
   Star(Box<Regex>),
   Alternation(Vec<Regex>),
   Seq(Vec<Regex>),
+}
+
+fn paren(s: impl fmt::Display) -> String {
+  return format!("(?:{})", s);
 }
 
 impl Regex {
@@ -70,14 +76,14 @@ impl Regex {
       Regex::Empty => panic!("cannot format empty regex"),
       Regex::Star(box r) => match r {
         Regex::Empty => "".to_string(),
-        _ => format!("({})*", r.print()),
+        _ => format!("{}*", r.print()),
       },
-      Regex::Alternation(ref rs) => format!(
-        "({})",
+      Regex::Alternation(ref rs) => paren(format!(
+        "{}",
         rs.iter().map(|r| r.print()).collect::<Vec<_>>().join("|")
-      ),
+      )),
       Regex::Seq(ref rs) => {
-        rs.iter().map(|r| r.print()).collect::<Vec<_>>().concat()
+        paren(rs.iter().map(|r| r.print()).collect::<Vec<_>>().concat())
       }
     }
   }
@@ -93,14 +99,14 @@ mod tests {
     assert_eq!(Regex::Group(vec!['a']).print(), "[a]");
     let abc = Regex::Group(vec!['a', 'b', 'c']);
     assert_eq!(abc.print(), "[abc]");
-    assert_eq!(Regex::Star(box abc.clone()).print(), "([abc])*");
+    assert_eq!(Regex::Star(box abc.clone()).print(), "[abc]*");
     assert_eq!(
       Regex::Alternation(vec![abc.clone(), abc.clone()]).print(),
-      "([abc]|[abc])"
+      "(?:[abc]|[abc])"
     );
     assert_eq!(
       Regex::Seq(vec![abc.clone(), abc.clone()]).print(),
-      "[abc][abc]"
+      "(?:[abc][abc])"
     );
     assert_eq!(Regex::eps().print(), "");
   }
