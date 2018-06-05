@@ -6,8 +6,8 @@ use std::iter;
 
 pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
   delta: HashMap<S, HashMap<C, S>>,
-  accept_states: HashSet<S>,
-  init_state: S,
+  pub accept_states: HashSet<S>,
+  pub init_state: S,
 }
 
 impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
@@ -26,6 +26,10 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
       // need a mapping for the same set of inputs
       chars.iter().all(|c| next.contains_key(c)) && next.values().all(|s| states.contains(s))
     })
+  }
+
+  pub fn transition_map(&self) -> &HashMap<S, HashMap<C, S>> {
+    &self.delta
   }
 
   pub fn new(delta: HashMap<S, HashMap<C, S>>, accept_states: HashSet<S>, init_state: S) -> Self {
