@@ -1,4 +1,6 @@
 #![feature(entry_or_default)]
+#![feature(box_syntax)]
+#![feature(box_patterns)]
 mod dfa;
 mod div_dfa;
 mod regex;

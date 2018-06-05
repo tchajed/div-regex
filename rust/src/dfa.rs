@@ -6,15 +6,15 @@ use std::iter;
 
 pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
   delta: HashMap<S, HashMap<C, S>>,
-  pub accept_states: HashSet<S>,
   pub init_state: S,
+  pub accept_states: HashSet<S>,
 }
 
 impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
   fn transition_invariant(
     delta: &HashMap<S, HashMap<C, S>>,
-    accept_states: &HashSet<S>,
     init_state: &S,
+    accept_states: &HashSet<S>,
   ) -> bool {
     let states: HashSet<_> = delta
       .keys()
@@ -35,13 +35,13 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
   pub fn new(delta: HashMap<S, HashMap<C, S>>, accept_states: HashSet<S>, init_state: S) -> Self {
     assert!(Dfa::transition_invariant(
       &delta,
+      &init_state,
       &accept_states,
-      &init_state
     ));
     Dfa {
       delta,
-      accept_states,
       init_state,
+      accept_states,
     }
   }
 
@@ -67,20 +67,12 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
   pub fn accepts(&self, input: impl IntoIterator<Item = C>) -> bool {
     self.accept_states.contains(&self.run(input))
   }
-}
 
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  fn make<S, C>(
+  pub fn make(
     delta: impl IntoIterator<Item = (S, impl IntoIterator<Item = (C, S)>)>,
-    accept_states: impl IntoIterator<Item = S>,
     initial_state: S,
-  ) -> Dfa<S, C>
-  where
-    S: Hash + Eq + Copy,
-    C: Hash + Eq + Copy,
+    accept_states: impl IntoIterator<Item = S>,
+  ) -> Self
   {
     Dfa::new(
       delta
@@ -91,10 +83,15 @@ mod tests {
       initial_state,
     )
   }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
 
   #[test]
   fn trivial_accept() {
-    let dfa: Dfa<_, char> = make(vec![(1, vec![])], vec![1], 1);
+    let dfa: Dfa<_, char> = Dfa::make(vec![(1, vec![])], 1, vec![1]);
     assert_eq!(dfa.accepts(vec![]), true);
   }
 }

@@ -19,11 +19,11 @@ pub struct Gnfa<S: Hash + Eq> {
 impl<S: Hash + Eq + Copy> Gnfa<S> {
   fn from_dfa(dfa: &Dfa<S, char>) -> Self {
     let init_transition =
-      ((State::Init, State::State(dfa.init_state)), Regex::empty());
+      ((State::Init, State::State(dfa.init_state)), Regex::eps());
     let final_transitions = dfa
       .accept_states
       .iter()
-      .map(|&s| ((State::State(s), State::Final), Regex::empty()));
+      .map(|&s| ((State::State(s), State::Final), Regex::eps()));
     let delta: HashMap<_, _> = dfa
       .transition_map()
       .keys()
@@ -144,5 +144,18 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
       .get(&(State::Init, State::Final))
       .cloned()
       .unwrap_or(Regex::Empty)
+      .simplify()
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn even() {
+    let delta = vec![(0, vec![('a', 1)]), (1, vec![('a', 0)])];
+    let dfa = Dfa::make(delta, 0, vec![0]);
+    let re = Gnfa::dfa_re(&dfa);
   }
 }
