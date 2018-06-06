@@ -1,4 +1,5 @@
 use dfa::Dfa;
+use regex::Regex;
 use simple_regex::Re;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -38,8 +39,8 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
     Gnfa { delta }
   }
 
-  pub fn dfa_re(dfa: &Dfa<S, char>) -> Re {
-    Gnfa::from_dfa(dfa).to_re()
+  pub fn dfa_re(dfa: &Dfa<S, char>) -> Regex {
+    Gnfa::from_dfa(dfa).to_re().regex()
   }
 
   fn transition(&self, s: State<S>, next: State<S>) -> Re {
@@ -156,7 +157,7 @@ mod tests {
   fn even() {
     let delta = vec![(0, vec![('a', 1)]), (1, vec![('a', 0)])];
     let dfa = Dfa::make(delta, 0, vec![0]);
-    let re = Gnfa::dfa_re(&dfa).regex();
+    let re = Gnfa::dfa_re(&dfa);
     let tests = vec![("", true), ("a", false), ("aa", true), ("aaa", false)];
     for (test, expected) in tests {
       assert_eq!(
@@ -164,7 +165,7 @@ mod tests {
         expected,
         "text: \"{}\" regex: {}",
         test,
-        re.as_str()
+        re
       );
     }
   }

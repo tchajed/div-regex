@@ -3,7 +3,6 @@ use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Re {
-  Literal(char),
   Group(Vec<char>),
   Empty,
   Star(Box<Re>),
@@ -34,10 +33,10 @@ impl Re {
 
   fn literal_group(rs: &Vec<Re>) -> Option<Re> {
     rs.iter()
-      .try_fold(Vec::new(), |mut cs, r| match r {
-        Re::Literal(c) => {
-          cs.push(*c);
-          Some(cs)
+      .try_fold(Vec::new(), |mut new_cs, r| match r {
+        Re::Group(cs) => {
+          new_cs.extend(cs);
+          Some(new_cs)
         }
         _ => None,
       })
@@ -46,7 +45,6 @@ impl Re {
 
   pub fn simplify(&self) -> Re {
     match self {
-      Re::Literal(_) => self.clone(),
       Re::Group(_) => self.clone(),
       Re::Empty => self.clone(),
       Re::Star(box r) => match r.simplify() {
@@ -108,8 +106,13 @@ impl Re {
 
   fn to_re_syntax(&self) -> String {
     match self {
-      Re::Literal(c) => c.to_string(),
-      Re::Group(cs) => format!("[{}]", cs.iter().collect::<String>()),
+      Re::Group(cs) => {
+        if cs.len() == 1 {
+          cs[0].to_string()
+        } else {
+          format!("[{}]", cs.iter().collect::<String>())
+        }
+      }
       Re::Empty => panic!("cannot format empty regex"),
       Re::Star(box r) => match r {
         Re::Empty => "".to_string(),
@@ -145,8 +148,7 @@ mod tests {
   fn basic_printing() {
     let abc = Re::Group(vec!['a', 'b', 'c']);
     let tests = vec![
-      (Re::Literal('a'), "a"),
-      (Re::Group(vec!['a']), "[a]"),
+      (Re::Group(vec!['a']), "a"),
       (abc.clone(), "[abc]"),
       (Re::Star(box abc.clone()), "[abc]*"),
       (
@@ -163,8 +165,8 @@ mod tests {
 
   #[test]
   fn simplification() {
-    let a = Re::Literal('a');
-    let b = Re::Literal('b');
+    let a = Re::Group(vec!['a']);
+    let b = Re::Group(vec!['b']);
     let tests = vec![
       (Re::Alternation(vec![]), Re::Empty),
       (Re::Seq(vec![]), Re::eps()),
