@@ -12,6 +12,7 @@ pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
 }
 
 impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
+  // these violations should probably not be a panic but a bit of error information
   fn transition_invariant(&self) -> bool {
     let delta = &self.delta;
     let states: HashSet<_> = delta
@@ -96,5 +97,50 @@ mod tests {
   fn trivial_accept() {
     let dfa: Dfa<_, char> = Dfa::make(vec![(1, vec![])], 1, vec![1]);
     assert_eq!(dfa.accepts(vec![]), true);
+  }
+
+  #[test]
+  fn accept_a() {
+    let dfa = Dfa::make(
+      vec![
+        (1, vec![('a', 2), ('b', 3)]),
+        (2, vec![('a', 3), ('b', 3)]),
+        (3, vec![('a', 3), ('b', 3)]),
+      ],
+      1,
+      vec![2],
+    );
+    for (input, expected) in vec![
+      ("", false),
+      ("a", true),
+      ("b", false),
+      ("aa", false),
+      ("ab", false),
+    ] {
+      assert_eq!(
+        dfa.accepts(input.chars()),
+        expected,
+        "final state {}",
+        dfa.run(input.chars())
+      );
+    }
+  }
+
+  #[test]
+  #[should_panic]
+  fn invariant_all_states_mentioned() {
+    Dfa::make(vec![(1, vec![('a', 2)])], 1, vec![1]);
+  }
+
+  #[test]
+  #[should_panic]
+  fn invariant_accept_states_mentioned() {
+    Dfa::make(vec![(1, vec![('a', 1)])], 1, vec![2]);
+  }
+
+  #[test]
+  #[should_panic]
+  fn invariant_same_inputs() {
+    Dfa::make(vec![(1, vec![('a', 2)]), (2, vec![])], 1, vec![1]);
   }
 }
