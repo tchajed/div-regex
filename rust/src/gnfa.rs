@@ -43,6 +43,10 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
     Gnfa::from_dfa(dfa).to_re().regex()
   }
 
+  pub fn dfa_re_str(dfa: &Dfa<S, char>) -> String {
+    Gnfa::from_dfa(dfa).to_re().to_re_syntax()
+  }
+
   fn transition(&self, s: State<S>, next: State<S>) -> Re {
     self.delta.get(&(s, next)).cloned().unwrap_or(Re::Empty)
   }

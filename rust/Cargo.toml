@@ -3,5 +3,14 @@ name = "div-regex"
 version = "0.1.0"
 authors = ["Tej Chajed <tchajed@mit.edu>"]
 
+[lib]
+name = "div_regex"
+path = "src/lib.rs"
+
+[[bin]]
+name = "div-re"
+path = "src/main.rs"
+
 [dependencies]
 regex = "0.2"
+clap = "~2.27.0"

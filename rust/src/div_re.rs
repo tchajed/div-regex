@@ -6,6 +6,10 @@ pub fn by(n: u32) -> Regex {
   Gnfa::dfa_re(&div_dfa::by(n).minimal())
 }
 
+pub fn by_str(n: u32) -> String {
+  Gnfa::dfa_re_str(&div_dfa::by(n).minimal())
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;

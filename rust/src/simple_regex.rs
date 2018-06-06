@@ -104,7 +104,7 @@ impl Re {
     }
   }
 
-  fn to_re_syntax(&self) -> String {
+  pub fn to_re_syntax(&self) -> String {
     match self {
       Re::Group(cs) => {
         if cs.len() == 1 {
