@@ -2,8 +2,6 @@ use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::iter;
 
-// TODO: figure out how to get RLS to infer types
-
 pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
   delta: HashMap<S, HashMap<C, S>>,
   // TODO: should these be exposed via functions or are fields fine?

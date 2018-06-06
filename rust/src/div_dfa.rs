@@ -8,7 +8,7 @@ pub fn by(n: u32) -> Dfa<u32, char> {
   let delta = (0..n)
     .map(|s| {
       let digit_next = (0..BASE).map(|d| {
-        let c: char = char::from_digit(d, BASE).unwrap(); // TODO: d -> char
+        let c: char = char::from_digit(d, BASE).unwrap();
         (c, (s * BASE + d) % n)
       });
       (s, digit_next.into_iter().collect())
