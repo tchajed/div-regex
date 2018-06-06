@@ -63,10 +63,6 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
     dfa
   }
 
-  pub fn transition(&self, s: S, x: C) -> S {
-    self.delta[&s][&x]
-  }
-
   pub fn next_states(&self, s: S) -> HashMap<S, Vec<C>> {
     self.delta[&s]
       .iter()
