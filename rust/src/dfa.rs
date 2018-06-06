@@ -21,10 +21,12 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
       .chain(accept_states.iter())
       .chain(iter::once(init_state))
       .collect();
-    let chars: HashSet<_> = delta.values().flat_map(|next| next.keys()).collect();
+    let chars: HashSet<_> =
+      delta.values().flat_map(|next| next.keys()).collect();
     states.iter().all(|s| delta.contains_key(s)) && delta.values().all(|next| {
       // need a mapping for the same set of inputs
-      chars.iter().all(|c| next.contains_key(c)) && next.values().all(|s| states.contains(s))
+      chars.iter().all(|c| next.contains_key(c))
+        && next.values().all(|s| states.contains(s))
     })
   }
 
@@ -32,7 +34,11 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
     &self.delta
   }
 
-  pub fn new(delta: HashMap<S, HashMap<C, S>>, accept_states: HashSet<S>, init_state: S) -> Self {
+  pub fn new(
+    delta: HashMap<S, HashMap<C, S>>,
+    accept_states: HashSet<S>,
+    init_state: S,
+  ) -> Self {
     assert!(Dfa::transition_invariant(
       &delta,
       &init_state,
@@ -72,8 +78,7 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
     delta: impl IntoIterator<Item = (S, impl IntoIterator<Item = (C, S)>)>,
     initial_state: S,
     accept_states: impl IntoIterator<Item = S>,
-  ) -> Self
-  {
+  ) -> Self {
     Dfa::new(
       delta
         .into_iter()

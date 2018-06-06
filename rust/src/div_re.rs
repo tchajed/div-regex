@@ -1,6 +1,6 @@
-use regex::Regex;
-use gnfa::Gnfa;
 use div_dfa;
+use gnfa::Gnfa;
+use regex::Regex;
 
 pub fn by(n: u32) -> Regex {
   Gnfa::dfa_re(&div_dfa::by(n))
