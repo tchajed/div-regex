@@ -6,20 +6,18 @@ use std::iter;
 
 pub struct Dfa<S: Hash + Eq, C: Hash + Eq> {
   delta: HashMap<S, HashMap<C, S>>,
+  // TODO: should these be exposed via functions or are fields fine?
   pub init_state: S,
   pub accept_states: HashSet<S>,
 }
 
 impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
-  fn transition_invariant(
-    delta: &HashMap<S, HashMap<C, S>>,
-    init_state: &S,
-    accept_states: &HashSet<S>,
-  ) -> bool {
+  fn transition_invariant(&self) -> bool {
+    let delta = &self.delta;
     let states: HashSet<_> = delta
       .keys()
-      .chain(accept_states.iter())
-      .chain(iter::once(init_state))
+      .chain(self.accept_states.iter())
+      .chain(iter::once(&self.init_state))
       .collect();
     let chars: HashSet<_> =
       delta.values().flat_map(|next| next.keys()).collect();
@@ -34,21 +32,36 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
     &self.delta
   }
 
+  pub fn make(
+    delta: impl IntoIterator<Item = (S, impl IntoIterator<Item = (C, S)>)>,
+    initial_state: S,
+    accept_states: impl IntoIterator<Item = S>,
+  ) -> Self {
+    Dfa::new(
+      delta
+        .into_iter()
+        .map(|(s, next)| (s, next.into_iter().collect()))
+        .collect(),
+      accept_states.into_iter().collect(),
+      initial_state,
+    )
+  }
+
   pub fn new(
     delta: HashMap<S, HashMap<C, S>>,
     accept_states: HashSet<S>,
     init_state: S,
   ) -> Self {
-    assert!(Dfa::transition_invariant(
-      &delta,
-      &init_state,
-      &accept_states,
-    ));
-    Dfa {
+    let dfa = Dfa {
       delta,
       init_state,
       accept_states,
-    }
+    };
+    assert!(
+      dfa.transition_invariant(),
+      "DFA completeness invariant violated"
+    );
+    dfa
   }
 
   pub fn transition(&self, s: S, x: C) -> S {
@@ -72,21 +85,6 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
 
   pub fn accepts(&self, input: impl IntoIterator<Item = C>) -> bool {
     self.accept_states.contains(&self.run(input))
-  }
-
-  pub fn make(
-    delta: impl IntoIterator<Item = (S, impl IntoIterator<Item = (C, S)>)>,
-    initial_state: S,
-    accept_states: impl IntoIterator<Item = S>,
-  ) -> Self {
-    Dfa::new(
-      delta
-        .into_iter()
-        .map(|(s, next)| (s, next.into_iter().collect()))
-        .collect(),
-      accept_states.into_iter().collect(),
-      initial_state,
-    )
   }
 }
 
