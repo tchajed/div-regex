@@ -43,15 +43,15 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
         .into_iter()
         .map(|(s, next)| (s, next.into_iter().collect()))
         .collect(),
-      accept_states.into_iter().collect(),
       initial_state,
+      accept_states.into_iter().collect(),
     )
   }
 
   pub fn new(
     delta: HashMap<S, HashMap<C, S>>,
-    accept_states: HashSet<S>,
     init_state: S,
+    accept_states: HashSet<S>,
   ) -> Self {
     let dfa = Dfa {
       delta,
@@ -86,6 +86,110 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
 
   pub fn accepts(&self, input: impl IntoIterator<Item = C>) -> bool {
     self.accept_states.contains(&self.run(input))
+  }
+
+  fn map<T, F>(&self, f: F) -> Dfa<T, C>
+  where
+    T: Eq + Hash + Copy,
+    F: FnMut(&S) -> T,
+  {
+    // TODO: how is this different from a mutable reference in the binding? does
+    // it hide something from the external signature?
+    let mut f = f;
+    let mut delta: HashMap<_, HashMap<C, T>> = HashMap::new();
+    for (s, old_out) in self.delta.iter() {
+      delta.entry(f(s)).or_insert_with(|| {
+        old_out.iter().map(|(&c, next_s)| (c, f(&next_s))).collect()
+      });
+    }
+    Dfa::new(
+      delta,
+      f(&self.init_state),
+      self.accept_states.iter().map(f).collect(),
+    )
+  }
+
+  fn chars(&self) -> Vec<C> {
+    self.delta[&self.init_state].keys().map(|c| *c).collect()
+  }
+
+  fn minimal_partition(&self) -> Partition<S> {
+    let non_accept_states = self
+      .delta
+      .keys()
+      .filter(|&s| !self.accept_states.contains(s))
+      .map(|s| *s)
+      .collect();
+    let accept_states = self.accept_states.iter().map(|s| *s).collect();
+    let mut p = Partition::new(vec![non_accept_states, accept_states]);
+    let chars = self.chars();
+    loop {
+      let new_p = p.refine(|q, other_q| {
+        let delta_q = &self.delta[q];
+        let delta_other_q = &self.delta[other_q];
+        chars
+          .iter()
+          .all(|x| p.index(&delta_q[x]) == p.index(&delta_other_q[x]))
+      });
+      if new_p.len() == p.len() {
+        return p;
+      }
+      p = new_p
+    }
+  }
+
+  pub fn minimal(&self) -> Dfa<usize, C> {
+    let p = self.minimal_partition();
+    self.map(|s| p.index(s))
+  }
+}
+
+struct Partition<S: Eq + Hash> {
+  sets: Vec<Vec<S>>,
+  set_index: HashMap<S, usize>,
+}
+
+impl<S: Eq + Hash + Clone> Partition<S> {
+  pub fn new(sets: Vec<Vec<S>>) -> Self {
+    let set_index = sets
+      .iter()
+      .enumerate()
+      .flat_map(|(i, set)| set.into_iter().map(move |q| (q.clone(), i)))
+      .collect();
+    Partition { sets, set_index }
+  }
+
+  pub fn len(&self) -> usize {
+    return self.sets.len();
+  }
+
+  pub fn refine<F>(&self, same_partition: F) -> Self
+  where
+    F: FnMut(&S, &S) -> bool,
+  {
+    let mut same_partition = same_partition;
+    let sets: Vec<Vec<S>> = self
+      .sets
+      .iter()
+      .flat_map(|p| {
+        let mut sets = vec![];
+        let mut p = p.clone();
+        while !p.is_empty() {
+          let q = p[0].clone();
+          let q_p =
+            p.drain_filter(|other_q| {
+              q == *other_q || same_partition(&q, other_q)
+            }).collect();
+          sets.push(q_p);
+        }
+        sets
+      })
+      .collect();
+    Partition::new(sets)
+  }
+
+  pub fn index(&self, q: &S) -> usize {
+    self.set_index[q]
   }
 }
 

@@ -1,5 +1,6 @@
 use dfa::Dfa;
 use std::char;
+use std::iter;
 
 const BASE: u32 = 10;
 
@@ -13,7 +14,7 @@ pub fn by(n: u32) -> Dfa<u32, char> {
       (s, digit_next.into_iter().collect())
     })
     .collect();
-  Dfa::new(delta, vec![0].into_iter().collect(), 0)
+  Dfa::new(delta, 0, iter::once(0).collect())
 }
 
 #[cfg(test)]
