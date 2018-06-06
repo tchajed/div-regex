@@ -200,7 +200,9 @@ mod tests {
   #[test]
   fn trivial_accept() {
     let dfa: Dfa<_, char> = Dfa::make(vec![(1, vec![])], 1, vec![1]);
+    let dfa_min = dfa.minimal();
     assert_eq!(dfa.accepts(vec![]), true);
+    assert_eq!(dfa_min.accepts(vec![]), true);
   }
 
   #[test]
@@ -214,6 +216,7 @@ mod tests {
       1,
       vec![2],
     );
+    let dfa_min = dfa.minimal();
     for (input, expected) in vec![
       ("", false),
       ("a", true),
@@ -223,6 +226,12 @@ mod tests {
     ] {
       assert_eq!(
         dfa.accepts(input.chars()),
+        expected,
+        "final state {}",
+        dfa.run(input.chars())
+      );
+      assert_eq!(
+        dfa_min.accepts(input.chars()),
         expected,
         "final state {}",
         dfa.run(input.chars())

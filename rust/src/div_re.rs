@@ -3,7 +3,7 @@ use gnfa::Gnfa;
 use regex::Regex;
 
 pub fn by(n: u32) -> Regex {
-  Gnfa::dfa_re(&div_dfa::by(n))
+  Gnfa::dfa_re(&div_dfa::by(n).minimal())
 }
 
 #[cfg(test)]
@@ -37,9 +37,8 @@ mod tests {
     test_modulus(5)
   }
 
-  // TODO: run after implementing minimization
-  // #[test]
-  // fn test_mod_10() {
-  //   test_modulus(10)
-  // }
+  #[test]
+  fn test_mod_10() {
+    test_modulus(10)
+  }
 }

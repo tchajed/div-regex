@@ -29,18 +29,29 @@ mod tests {
     }
   }
 
+  fn test_divisible(n: u32) {
+    let dfa = by(n).minimal();
+    for m in 0..1000 {
+      let s = m.to_string();
+      assert_eq!(dfa.accepts(s.chars()), m % n == 0)
+    }
+  }
+
   #[test]
   fn test_mod_4() {
-    test_modulus(4)
+    test_modulus(4);
+    test_divisible(4);
   }
 
   #[test]
   fn test_mod_10() {
-    test_modulus(10)
+    test_modulus(10);
+    test_divisible(10);
   }
 
   #[test]
   fn test_mod_14() {
-    test_modulus(14)
+    test_modulus(14);
+    test_divisible(14);
   }
 }
