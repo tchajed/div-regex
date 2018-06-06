@@ -1,5 +1,5 @@
 use dfa::Dfa;
-use regex::Regex;
+use simple_regex::Re;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::hash::Hash;
@@ -13,23 +13,23 @@ pub enum State<S> {
 }
 
 pub struct Gnfa<S: Hash + Eq> {
-  delta: HashMap<(State<S>, State<S>), Regex>,
+  delta: HashMap<(State<S>, State<S>), Re>,
 }
 
 impl<S: Hash + Eq + Copy> Gnfa<S> {
   fn from_dfa(dfa: &Dfa<S, char>) -> Self {
     let init_transition =
-      ((State::Init, State::State(dfa.init_state)), Regex::eps());
+      ((State::Init, State::State(dfa.init_state)), Re::eps());
     let final_transitions = dfa
       .accept_states
       .iter()
-      .map(|&s| ((State::State(s), State::Final), Regex::eps()));
+      .map(|&s| ((State::State(s), State::Final), Re::eps()));
     let delta: HashMap<_, _> = dfa
       .transition_map()
       .keys()
       .flat_map(|&s1| {
         dfa.next_states(s1).into_iter().map(move |(s2, xs)| {
-          ((State::State(s1), State::State(s2)), Regex::Group(xs))
+          ((State::State(s1), State::State(s2)), Re::Group(xs))
         })
       })
       .chain(iter::once(init_transition))
@@ -38,15 +38,15 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
     Gnfa { delta }
   }
 
-  pub fn dfa_re(dfa: &Dfa<S, char>) -> Regex {
+  pub fn dfa_re(dfa: &Dfa<S, char>) -> Re {
     Gnfa::from_dfa(dfa).to_re()
   }
 
-  fn transition(&self, s: State<S>, next: State<S>) -> Regex {
-    self.delta.get(&(s, next)).cloned().unwrap_or(Regex::Empty)
+  fn transition(&self, s: State<S>, next: State<S>) -> Re {
+    self.delta.get(&(s, next)).cloned().unwrap_or(Re::Empty)
   }
 
-  fn incoming_edges(&self, next0: S) -> Vec<(State<S>, Regex)> {
+  fn incoming_edges(&self, next0: S) -> Vec<(State<S>, Re)> {
     self
       .delta
       .iter()
@@ -60,7 +60,7 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
       .collect()
   }
 
-  fn outgoing_edges(&self, s0: S) -> Vec<(State<S>, Regex)> {
+  fn outgoing_edges(&self, s0: S) -> Vec<(State<S>, Re)> {
     self
       .delta
       .iter()
@@ -74,7 +74,7 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
       .collect()
   }
 
-  fn loop_regex(&self, s: State<S>) -> Regex {
+  fn loop_regex(&self, s: State<S>) -> Re {
     self.transition(s, s)
   }
 
@@ -99,11 +99,11 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
   fn rip_state(&mut self, q_rip: S) {
     let in_list = self.incoming_edges(q_rip);
     let out_list = self.outgoing_edges(q_rip);
-    let r_rip = Regex::star(self.loop_regex(State::State(q_rip)));
+    let r_rip = Re::star(self.loop_regex(State::State(q_rip)));
     for (q_in, r_in) in in_list {
       for &(q_out, ref r_out) in &out_list {
         let r_in_replacement =
-          Regex::Seq(vec![r_in.clone(), r_rip.clone(), r_out.clone()]);
+          Re::Seq(vec![r_in.clone(), r_rip.clone(), r_out.clone()]);
         match self.delta.entry((q_in, q_out)) {
           Entry::Occupied(mut e) => e.get_mut().add_or(r_in_replacement),
           Entry::Vacant(e) => {
@@ -137,13 +137,13 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
     }
   }
 
-  fn to_re(mut self) -> Regex {
+  fn to_re(mut self) -> Re {
     self.rip_all();
     self
       .delta
       .get(&(State::Init, State::Final))
       .cloned()
-      .unwrap_or(Regex::Empty)
+      .unwrap_or(Re::Empty)
       .simplify()
   }
 }
@@ -156,6 +156,16 @@ mod tests {
   fn even() {
     let delta = vec![(0, vec![('a', 1)]), (1, vec![('a', 0)])];
     let dfa = Dfa::make(delta, 0, vec![0]);
-    let re = Gnfa::dfa_re(&dfa);
+    let re = Gnfa::dfa_re(&dfa).regex();
+    let tests = vec![("", true), ("a", false), ("aa", true), ("aaa", false)];
+    for (test, expected) in tests {
+      assert_eq!(
+        re.is_match(test),
+        expected,
+        "text: \"{}\" regex: {}",
+        test,
+        re.as_str()
+      );
+    }
   }
 }
