@@ -169,4 +169,61 @@ mod tests {
       );
     }
   }
+
+  #[test]
+  fn three_state() {
+    // ab(.ab)*
+    let delta = vec![
+      (0, vec![('a', 1), ('b', 0)]),
+      (1, vec![('b', 2), ('a', 0)]),
+      (2, vec![('a', 0), ('b', 0)]),
+    ];
+    let dfa = Dfa::make(delta, 0, vec![2]);
+    let re = Gnfa::dfa_re(&dfa);
+    let tests = vec![
+      ("", false),
+      ("ab", true),
+      ("aba", false),
+      ("abaab", true),
+      ("abab", false),
+    ];
+    for (test, expected) in tests {
+      assert_eq!(
+        re.is_match(test),
+        expected,
+        "text: \"{}\" regex: {}",
+        test,
+        re
+      );
+    }
+  }
+
+  #[test]
+  fn ab() {
+    let delta = vec![
+      (0, vec![('a', 1), ('b', 3)]),
+      (1, vec![('b', 2), ('a', 3)]),
+      (2, vec![('a', 3), ('b', 3)]),
+      (3, vec![('a', 3), ('b', 3)]),
+    ];
+    let dfa = Dfa::make(delta, 0, vec![2]);
+    let re = Gnfa::dfa_re(&dfa);
+    let tests = vec![
+      ("", false),
+      ("a", false),
+      ("ab", true),
+      ("aba", false),
+      ("abaab", false),
+      ("abab", false),
+    ];
+    for (test, expected) in tests {
+      assert_eq!(
+        re.is_match(test),
+        expected,
+        "text: \"{}\" regex: {}",
+        test,
+        re
+      );
+    }
+  }
 }
