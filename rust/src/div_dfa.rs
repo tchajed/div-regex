@@ -3,7 +3,7 @@ use std::char;
 
 const BASE: u32 = 10;
 
-pub fn divisible_by(n: u32) -> Dfa<u32, char> {
+pub fn by(n: u32) -> Dfa<u32, char> {
   let delta = (0..n).map(|s| {
     let digit_next = (0..BASE).map(|d| {
       let c: char = char::from_digit(d, BASE).unwrap(); // TODO: d -> char
@@ -19,7 +19,7 @@ mod tests {
   use super::*;
 
   fn test_modulus(n: u32) {
-    let dfa = divisible_by(n);
+    let dfa = by(n);
     for m in 0..1000 {
       let s = m.to_string();
       assert_eq!(dfa.run(s.chars()), m % n)
