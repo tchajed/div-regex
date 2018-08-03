@@ -170,15 +170,14 @@ impl<S: Eq + Hash + Clone> Partition<S> {
         let mut p = p.clone();
         while !p.is_empty() {
           let q = p[0].clone();
-          let q_p =
-            p.drain_filter(|other_q| {
+          let q_p = p
+            .drain_filter(|other_q| {
               q == *other_q || same_partition(&q, other_q)
             }).collect();
           sets.push(q_p);
         }
         sets
-      })
-      .collect();
+      }).collect();
     Partition::new(sets)
   }
 
