@@ -39,7 +39,8 @@ impl Re {
           Some(new_cs)
         }
         _ => None,
-      }).map(|cs| Re::Group(cs))
+      })
+      .map(|cs| Re::Group(cs))
   }
 
   pub fn simplify(&self) -> Re {

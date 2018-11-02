@@ -12,7 +12,8 @@ pub fn by(n: u32) -> Dfa<u32, char> {
         (c, (s * BASE + d) % n)
       });
       (s, digit_next.into_iter().collect())
-    }).collect();
+    })
+    .collect();
   Dfa::new(delta, 0, iter::once(0).collect())
 }
 

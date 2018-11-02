@@ -20,11 +20,12 @@ impl<S: Hash + Eq + Copy, C: Hash + Eq + Copy> Dfa<S, C> {
       .collect();
     let chars: HashSet<_> =
       delta.values().flat_map(|next| next.keys()).collect();
-    states.iter().all(|s| delta.contains_key(s)) && delta.values().all(|next| {
-      // need a mapping for the same set of inputs
-      chars.iter().all(|c| next.contains_key(c))
-        && next.values().all(|s| states.contains(s))
-    })
+    states.iter().all(|s| delta.contains_key(s))
+      && delta.values().all(|next| {
+        // need a mapping for the same set of inputs
+        chars.iter().all(|c| next.contains_key(c))
+          && next.values().all(|s| states.contains(s))
+      })
   }
 
   pub fn transition_map(&self) -> &HashMap<S, HashMap<C, S>> {
@@ -173,11 +174,13 @@ impl<S: Eq + Hash + Clone> Partition<S> {
           let q_p = p
             .drain_filter(|other_q| {
               q == *other_q || same_partition(&q, other_q)
-            }).collect();
+            })
+            .collect();
           sets.push(q_p);
         }
         sets
-      }).collect();
+      })
+      .collect();
     Partition::new(sets)
   }
 

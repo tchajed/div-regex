@@ -32,7 +32,8 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
         dfa.next_states(s1).into_iter().map(move |(s2, xs)| {
           ((State::State(s1), State::State(s2)), Re::Group(xs))
         })
-      }).chain(iter::once(init_transition))
+      })
+      .chain(iter::once(init_transition))
       .chain(final_transitions)
       .collect();
     Gnfa { delta }
@@ -60,7 +61,8 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
         } else {
           None
         }
-      }).collect()
+      })
+      .collect()
   }
 
   fn outgoing_edges(&self, s0: S) -> Vec<(State<S>, Re)> {
@@ -73,7 +75,8 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
         } else {
           None
         }
-      }).collect()
+      })
+      .collect()
   }
 
   fn loop_regex(&self, s: State<S>) -> Re {
@@ -91,7 +94,8 @@ impl<S: Hash + Eq + Copy> Gnfa<S> {
         } else {
           None
         }
-      }).collect();
+      })
+      .collect();
     for e in edges {
       self.delta.remove(&e);
     }
